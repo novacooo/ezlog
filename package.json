@@ -1,0 +1,30 @@
+{
+  "name": "ezlog",
+  "version": "0.1.0",
+  "description": "🪵 Lightweight, no-nonsense logger for personal projects.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "homepage": "https://github.com/novacooo/ezlog#readme",
+  "bugs": {
+    "url": "https://github.com/novacooo/ezlog/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/novacooo/ezlog.git"
+  },
+  "license": "MIT",
+  "author": "Jacek Nowak",
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon",
+    "build": "rimraf dist && tsc"
+  },
+  "devDependencies": {
+    "@types/node": "^24.6.0",
+    "nodemon": "^3.1.10",
+    "rimraf": "^6.0.1",
+    "ts-node": "^10.9.2",
+    "tslib": "^2.8.1",
+    "typescript": "^5.9.2"
+  }
+}
