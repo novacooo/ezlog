@@ -1,3 +1,5 @@
+import type { ObjectValues } from './utils';
+
 export const LogLevelName = {
   DEBUG: 'debug',
   INFO: 'info',
@@ -13,8 +15,6 @@ export const LogLevelNumber: Record<keyof typeof LogLevelName, number> = {
   ERROR: 3,
   FATAL: 4,
 } as const;
-
-type ObjectValues<T> = T[keyof T];
 
 type NameToNumberMap = Record<ObjectValues<typeof LogLevelName>, ObjectValues<typeof LogLevelNumber>>;
 
