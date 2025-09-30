@@ -14,7 +14,7 @@
   },
   "license": "MIT",
   "author": "Jacek Nowak",
-  "type": "module",
+  "type": "commonjs",
   "scripts": {
     "format:check": "prettier --check .",
     "format": "prettier --write .",
