@@ -1,12 +1,6 @@
-import { type LogLevel, LogLevelName, normalizeLogLevel, NormalizeTarget } from './levels';
-import { hasColorSupport, LogColor } from './colors';
+import { type LogLevel, normalizeLogLevel, NormalizeTarget } from './levels';
+import { Color, colorize, getLogLevelColor } from './colors';
 import type { ObjectValues } from './utils';
-
-export type LogEntry = {
-  level: LogLevel;
-  message: string;
-  timestamp?: Date;
-};
 
 export const TimeFormat = {
   HH: 'HH:mm:ss',
@@ -16,50 +10,33 @@ export const TimeFormat = {
 
 export type TimeFormat = ObjectValues<typeof TimeFormat>;
 
-export type FormatterOptions = {
-  useColors?: boolean;
-  timeFormat?: TimeFormat;
+function formatTime(date: Date, format: TimeFormat = TimeFormat.HH): string {
+  if (format === TimeFormat.HH) {
+    return date.toTimeString().slice(0, 8);
+  } else if (format === TimeFormat.HH_SSS) {
+    return date.toTimeString().slice(0, 8) + '.' + date.getMilliseconds().toString().padStart(3, '0');
+  } else if (format === TimeFormat.ISO) {
+    return date.toISOString();
+  } else {
+    return date.toTimeString().slice(0, 8);
+  }
+}
+
+export type LogEntry = {
+  level: LogLevel;
+  message: string;
 };
 
-function formatTime(date: Date, format: TimeFormat = TimeFormat.HH): string {
-  switch (format) {
-    case TimeFormat.HH:
-      return date.toTimeString().slice(0, 8);
-    case TimeFormat.HH_SSS:
-      return date.toTimeString().slice(0, 8) + '.' + date.getMilliseconds().toString().padStart(3, '0');
-    case TimeFormat.ISO:
-      return date.toISOString();
-    default:
-      return date.toTimeString().slice(0, 8);
-  }
-}
+export function formatLog(entry: LogEntry) {
+  const time = formatTime(new Date(), TimeFormat.HH);
+  const name = normalizeLogLevel(entry.level, NormalizeTarget.NAME).toUpperCase();
+  const level = name.padEnd(5, ' ');
+  const color = getLogLevelColor(entry.level);
 
-function colorize(text: string, logLevel: LogLevel, useColors: boolean): string {
-  if (!useColors) {
-    return text;
-  }
+  const timeChunk = `${colorize('[', Color.LIGHT_GRAY)}${colorize(time, Color.GRAY)}${colorize(']', Color.LIGHT_GRAY)}`;
+  const levelChunk = colorize(level, color);
+  const dividerChunk = colorize('|', Color.GRAY);
+  const messageChunk = colorize(entry.message, color);
 
-  const levelName = normalizeLogLevel(logLevel, NormalizeTarget.NAME);
-  const upperCase = levelName.toUpperCase() as Uppercase<ObjectValues<typeof LogLevelName>>;
-  const color = LogColor[upperCase];
-  const reset = LogColor.RESET;
-
-  return `${color}${text}${reset}`;
-}
-
-export function formatLog(entry: LogEntry, options: FormatterOptions = {}): string {
-  const { useColors = hasColorSupport(), timeFormat = TimeFormat.HH } = options;
-
-  const timestamp = entry.timestamp || new Date();
-  const timeString = formatTime(timestamp, timeFormat);
-  const levelName = normalizeLogLevel(entry.level, NormalizeTarget.NAME);
-  const levelPadded = levelName.padEnd(5, ' ');
-
-  const coloredLevel = colorize(levelPadded, levelName, useColors);
-
-  return `[${timeString}] ${coloredLevel} ${entry.message}`;
-}
-
-export function defaultFormatter(entry: LogEntry): string {
-  return formatLog(entry);
+  return [timeChunk, levelChunk, dividerChunk, messageChunk].join(' ');
 }
