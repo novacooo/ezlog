@@ -35,17 +35,17 @@ const logger = createLogger({
 
 ### Log Levels
 
-- `LogLevel.DEBUG` (0) - Detailed debug information
-- `LogLevel.INFO` (1) - General informational messages
-- `LogLevel.WARN` (2) - Warning messages
-- `LogLevel.ERROR` (3) - Error messages
-- `LogLevel.FATAL` (4) - Critical errors
+- `'debug'` (0) - Detailed debug information
+- `'info'` (1) - General informational messages (default)
+- `'warn'` (2) - Warning messages
+- `'error'` (3) - Error messages
+- `'fatal'` (4) - Critical errors
 
 ### Time Formats
 
-- `TimeFormat.HH` - `HH:mm:ss` (default)
-- `TimeFormat.HH_SSS` - `HH:mm:ss.SSS`
-- `TimeFormat.ISO` - ISO 8601 format
+- `'HH:mm:ss'` - Hours, minutes, seconds (default)
+- `'HH:mm:ss.SSS'` - With milliseconds
+- `'ISO'` - ISO 8601 format
 
 ## License
 
