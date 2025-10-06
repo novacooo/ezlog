@@ -2,8 +2,34 @@
   "name": "ezlog",
   "version": "0.1.0",
   "description": "🪵 Lightweight, no-nonsense logger for personal projects.",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      }
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "logger",
+    "logging",
+    "log",
+    "console",
+    "typescript",
+    "functional"
+  ],
   "homepage": "https://github.com/novacooo/ezlog#readme",
   "bugs": {
     "url": "https://github.com/novacooo/ezlog/issues"
@@ -14,7 +40,6 @@
   },
   "license": "MIT",
   "author": "Jacek Nowak",
-  "type": "commonjs",
   "scripts": {
     "format:check": "prettier --check .",
     "format": "prettier --write .",
@@ -22,7 +47,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "dev": "nodemon",
-    "build": "tsup src/index.ts"
+    "build": "tsup"
   },
   "devDependencies": {
     "@types/node": "^24.6.0",
