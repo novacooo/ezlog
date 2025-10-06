@@ -47,7 +47,10 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "dev": "nodemon",
-    "build": "tsup"
+    "build": "tsup",
+    "release": "npm run build && npm test && npm publish",
+    "version": "npm run build && git add -A",
+    "postversion": "git push && git push --tags"
   },
   "devDependencies": {
     "@types/node": "^24.6.0",
