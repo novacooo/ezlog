@@ -1,9 +1,19 @@
 import { type LogLevel, LogLevelName, normalizeLogLevel, NormalizeTarget, shouldLog } from './levels';
 import { formatLog } from './formatters';
 
-export interface LoggerOptions {
+export type LoggerOptions = {
   minLevel?: LogLevel;
-}
+};
+
+export type Logger = {
+  debug: (message: string) => void;
+  info: (message: string) => void;
+  warn: (message: string) => void;
+  error: (message: string) => void;
+  fatal: (message: string) => void;
+  setMinLevel: (level: LogLevel) => void;
+  getMinLevel: () => LogLevel;
+};
 
 const methodMap = {
   [LogLevelName.DEBUG]: console.debug,
@@ -18,51 +28,27 @@ function getMethod(logLevel: LogLevel) {
   return methodMap[normalized] ?? console.log;
 }
 
-export class Logger {
-  private minLevel: LogLevel;
+function log(level: LogLevel, message: string, minLevel: LogLevel): void {
+  if (!shouldLog(level, minLevel)) return;
 
-  constructor(options: LoggerOptions = {}) {
-    this.minLevel = options.minLevel ?? 'info';
-  }
+  const msg = formatLog({ level, message });
+  const method = getMethod(level);
 
-  debug(message: string) {
-    this.log('debug', message);
-  }
-
-  info(message: string) {
-    this.log('info', message);
-  }
-
-  warn(message: string) {
-    this.log('warn', message);
-  }
-
-  error(message: string) {
-    this.log('error', message);
-  }
-
-  fatal(message: string) {
-    this.log('fatal', message);
-  }
-
-  setMinLevel(level: LogLevel) {
-    this.minLevel = level;
-  }
-
-  getMinLevel(): LogLevel {
-    return this.minLevel;
-  }
-
-  private log(level: LogLevel, message: string): void {
-    if (!shouldLog(level, this.minLevel)) return;
-
-    const msg = formatLog({ level, message });
-    const method = getMethod(level);
-
-    method(msg);
-  }
+  method(msg);
 }
 
 export function createLogger(options: LoggerOptions = {}): Logger {
-  return new Logger(options);
+  let minLevel: LogLevel = options.minLevel ?? 'info';
+
+  return {
+    debug: (message: string) => log('debug', message, minLevel),
+    info: (message: string) => log('info', message, minLevel),
+    warn: (message: string) => log('warn', message, minLevel),
+    error: (message: string) => log('error', message, minLevel),
+    fatal: (message: string) => log('fatal', message, minLevel),
+    setMinLevel: (level: LogLevel) => {
+      minLevel = level;
+    },
+    getMinLevel: () => minLevel,
+  };
 }
