@@ -1,5 +1,5 @@
 {
-  "name": "ezlog",
+  "name": "@novacooo/ezlog",
   "version": "0.1.0",
   "description": "🪵 Lightweight, no-nonsense logger for personal projects.",
   "main": "./dist/index.js",
