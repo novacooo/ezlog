@@ -22,21 +22,16 @@ function formatTime(date: Date, format: TimeFormat = TimeFormat.HH): string {
   }
 }
 
-export type LogEntry = {
-  level: LogLevel;
-  message: string;
-};
-
-export function formatLog(entry: LogEntry) {
-  const time = formatTime(new Date(), TimeFormat.HH);
-  const name = normalizeLogLevel(entry.level, NormalizeTarget.NAME).toUpperCase();
+export function formatLog(logLevel: LogLevel, timeFormat: TimeFormat, message: string): string {
+  const time = formatTime(new Date(), timeFormat);
+  const name = normalizeLogLevel(logLevel, NormalizeTarget.NAME).toUpperCase();
   const level = name.padEnd(5, ' ');
-  const color = getTextColor(entry.level);
+  const color = getTextColor(logLevel);
 
   const timeChunk = `${colorizeText('[', TextColor.LIGHT_GRAY)}${colorizeText(time, TextColor.GRAY)}${colorizeText(']', TextColor.LIGHT_GRAY)}`;
   const levelChunk = colorizeText(level, color);
   const dividerChunk = colorizeText('|', TextColor.GRAY);
-  const messageChunk = colorizeText(entry.message, color);
+  const messageChunk = colorizeText(message, color);
 
   return [timeChunk, levelChunk, dividerChunk, messageChunk].join(' ');
 }

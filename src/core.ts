@@ -1,8 +1,9 @@
 import { LogLevel, normalizeLogLevel, NormalizeTarget, shouldLog } from './levels';
-import { formatLog } from './formatters';
+import { formatLog, TimeFormat } from './formatters';
 
 export type LoggerOptions = {
   minLevel?: LogLevel;
+  timeFormat?: TimeFormat;
 };
 
 export type Logger = {
@@ -26,23 +27,24 @@ function getMethod(logLevel: LogLevel) {
   return methodMap[normalized] ?? console.log;
 }
 
-function log(level: LogLevel, message: string, minLevel: LogLevel): void {
+function log(level: LogLevel, minLevel: LogLevel, timeFormat: TimeFormat, message: string): void {
   if (!shouldLog(level, minLevel)) return;
 
-  const msg = formatLog({ level, message });
+  const msg = formatLog(level, timeFormat, message);
   const method = getMethod(level);
 
   method(msg);
 }
 
 export function createLogger(options: LoggerOptions = {}): Logger {
-  let minLevel = options.minLevel ?? LogLevel.INFO;
+  const minLevel = options.minLevel ?? LogLevel.INFO;
+  const timeFormat = options.timeFormat ?? TimeFormat.HH;
 
   return {
-    debug: (message: string) => log(LogLevel.DEBUG, message, minLevel),
-    info: (message: string) => log(LogLevel.INFO, message, minLevel),
-    warn: (message: string) => log(LogLevel.WARN, message, minLevel),
-    error: (message: string) => log(LogLevel.ERROR, message, minLevel),
-    fatal: (message: string) => log(LogLevel.FATAL, message, minLevel),
+    debug: (message: string) => log(LogLevel.DEBUG, minLevel, timeFormat, message),
+    info: (message: string) => log(LogLevel.INFO, minLevel, timeFormat, message),
+    warn: (message: string) => log(LogLevel.WARN, minLevel, timeFormat, message),
+    error: (message: string) => log(LogLevel.ERROR, minLevel, timeFormat, message),
+    fatal: (message: string) => log(LogLevel.FATAL, minLevel, timeFormat, message),
   };
 }
