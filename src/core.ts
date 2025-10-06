@@ -14,17 +14,17 @@ export type Logger = {
   fatal: (message: string) => void;
 };
 
-const methodMap = {
+const methodMap: Record<LogLevel, typeof console.log> = {
   [LogLevel.DEBUG]: console.debug,
   [LogLevel.INFO]: console.info,
   [LogLevel.WARN]: console.warn,
   [LogLevel.ERROR]: console.error,
   [LogLevel.FATAL]: console.error,
-} as const;
+};
 
 function getMethod(logLevel: LogLevel) {
   const normalized = normalizeLogLevel(logLevel, NormalizeTarget.NAME);
-  return methodMap[normalized] ?? console.log;
+  return methodMap[normalized];
 }
 
 function log(level: LogLevel, minLevel: LogLevel, timeFormat: TimeFormat, message: string): void {
