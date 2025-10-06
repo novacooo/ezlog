@@ -1,5 +1,5 @@
 import { type LogLevel, normalizeLogLevel, NormalizeTarget } from './levels';
-import { colorize, getLogLevelColor, TextColor } from './colors';
+import { colorizeText, getTextColor, TextColor } from './colors';
 import type { ObjectValues } from './utils';
 
 export const TimeFormat = {
@@ -31,12 +31,12 @@ export function formatLog(entry: LogEntry) {
   const time = formatTime(new Date(), TimeFormat.HH);
   const name = normalizeLogLevel(entry.level, NormalizeTarget.NAME).toUpperCase();
   const level = name.padEnd(5, ' ');
-  const color = getLogLevelColor(entry.level);
+  const color = getTextColor(entry.level);
 
-  const timeChunk = `${colorize('[', TextColor.LIGHT_GRAY)}${colorize(time, TextColor.GRAY)}${colorize(']', TextColor.LIGHT_GRAY)}`;
-  const levelChunk = colorize(level, color);
-  const dividerChunk = colorize('|', TextColor.GRAY);
-  const messageChunk = colorize(entry.message, color);
+  const timeChunk = `${colorizeText('[', TextColor.LIGHT_GRAY)}${colorizeText(time, TextColor.GRAY)}${colorizeText(']', TextColor.LIGHT_GRAY)}`;
+  const levelChunk = colorizeText(level, color);
+  const dividerChunk = colorizeText('|', TextColor.GRAY);
+  const messageChunk = colorizeText(entry.message, color);
 
   return [timeChunk, levelChunk, dividerChunk, messageChunk].join(' ');
 }

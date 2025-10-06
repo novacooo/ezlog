@@ -1,4 +1,4 @@
-import { type LogLevel, LogLevelName, normalizeLogLevel, NormalizeTarget, shouldLog } from './levels';
+import { LogLevel, normalizeLogLevel, NormalizeTarget, shouldLog } from './levels';
 import { formatLog } from './formatters';
 
 export type LoggerOptions = {
@@ -11,16 +11,14 @@ export type Logger = {
   warn: (message: string) => void;
   error: (message: string) => void;
   fatal: (message: string) => void;
-  setMinLevel: (level: LogLevel) => void;
-  getMinLevel: () => LogLevel;
 };
 
 const methodMap = {
-  [LogLevelName.DEBUG]: console.debug,
-  [LogLevelName.INFO]: console.info,
-  [LogLevelName.WARN]: console.warn,
-  [LogLevelName.ERROR]: console.error,
-  [LogLevelName.FATAL]: console.error,
+  [LogLevel.DEBUG]: console.debug,
+  [LogLevel.INFO]: console.info,
+  [LogLevel.WARN]: console.warn,
+  [LogLevel.ERROR]: console.error,
+  [LogLevel.FATAL]: console.error,
 } as const;
 
 function getMethod(logLevel: LogLevel) {
@@ -38,17 +36,13 @@ function log(level: LogLevel, message: string, minLevel: LogLevel): void {
 }
 
 export function createLogger(options: LoggerOptions = {}): Logger {
-  let minLevel: LogLevel = options.minLevel ?? 'info';
+  let minLevel = options.minLevel ?? LogLevel.INFO;
 
   return {
-    debug: (message: string) => log('debug', message, minLevel),
-    info: (message: string) => log('info', message, minLevel),
-    warn: (message: string) => log('warn', message, minLevel),
-    error: (message: string) => log('error', message, minLevel),
-    fatal: (message: string) => log('fatal', message, minLevel),
-    setMinLevel: (level: LogLevel) => {
-      minLevel = level;
-    },
-    getMinLevel: () => minLevel,
+    debug: (message: string) => log(LogLevel.DEBUG, message, minLevel),
+    info: (message: string) => log(LogLevel.INFO, message, minLevel),
+    warn: (message: string) => log(LogLevel.WARN, message, minLevel),
+    error: (message: string) => log(LogLevel.ERROR, message, minLevel),
+    fatal: (message: string) => log(LogLevel.FATAL, message, minLevel),
   };
 }
