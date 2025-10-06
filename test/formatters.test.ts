@@ -8,7 +8,6 @@ describe('formatLog', () => {
 
     expect(result).toContain('INFO');
     expect(result).toContain('test message');
-    expect(result).toContain('|');
     expect(result).toMatch(/\d{2}:\d{2}:\d{2}/); // HH:mm:ss pattern
   });
 
@@ -45,8 +44,6 @@ describe('formatLog', () => {
     expect(result).toMatch(/\[.*\]/);
     // Check for level
     expect(result).toContain('WARN');
-    // Check for divider
-    expect(result).toContain('|');
     // Check for message
     expect(result).toContain('warning message');
   });

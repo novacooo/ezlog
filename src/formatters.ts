@@ -30,8 +30,7 @@ export function formatLog(logLevel: LogLevel, timeFormat: TimeFormat, message: s
 
   const timeChunk = `${colorizeText('[', TextColor.LIGHT_GRAY)}${colorizeText(time, TextColor.GRAY)}${colorizeText(']', TextColor.LIGHT_GRAY)}`;
   const levelChunk = colorizeText(level, color);
-  const dividerChunk = colorizeText('|', TextColor.GRAY);
   const messageChunk = colorizeText(message, color);
 
-  return [timeChunk, levelChunk, dividerChunk, messageChunk].join(' ');
+  return [timeChunk, levelChunk, messageChunk].join(' ');
 }
