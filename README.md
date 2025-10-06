@@ -1,17 +1,17 @@
-# ezlog
+# @novacooo/ezlog
 
 🪵 Lightweight, no-nonsense logger for personal projects.
 
 ## Installation
 
 ```bash
-npm install ezlog
+npm install @novacooo/ezlog
 ```
 
 ## Usage
 
 ```typescript
-import { createLogger } from 'ezlog';
+import { createLogger } from '@novacooo/ezlog';
 
 const logger = createLogger();
 
@@ -25,7 +25,7 @@ logger.fatal('Fatal error');
 ## Configuration
 
 ```typescript
-import { createLogger } from 'ezlog';
+import { createLogger } from '@novacooo/ezlog';
 
 const logger = createLogger({
   minLevel: 'debug',
