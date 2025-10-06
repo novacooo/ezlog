@@ -57,7 +57,9 @@ export function normalizeLogLevel(level: LogLevel | number, target: NormalizeTar
         return level;
       }
 
-      const inverseMap = Object.fromEntries(Object.entries(levelMap).map(([name, number]) => [number, name]));
+      const inverseMap: Record<string, LogLevel> = Object.fromEntries(
+        Object.entries(levelMap).map(([name, number]) => [number, name as LogLevel]),
+      );
       const normalized = inverseMap[level];
 
       if (normalized === undefined) {
@@ -68,7 +70,7 @@ export function normalizeLogLevel(level: LogLevel | number, target: NormalizeTar
         throw new Error(`Invalid log level number: ${level}. Must be between ${min}-${max}.`);
       }
 
-      return Number(normalized);
+      return normalized;
     default:
       throw new Error(
         `Invalid normalization target: ${target}. Must be '${NormalizeTarget.NAME}' or '${NormalizeTarget.NUMBER}'.`,
@@ -76,6 +78,6 @@ export function normalizeLogLevel(level: LogLevel | number, target: NormalizeTar
   }
 }
 
-export function shouldLog(level: LogLevel, minLevel: LogLevel): boolean {
+export function shouldLog(level: LogLevel | number, minLevel: LogLevel | number): boolean {
   return normalizeLogLevel(level, NormalizeTarget.NUMBER) >= normalizeLogLevel(minLevel, NormalizeTarget.NUMBER);
 }
