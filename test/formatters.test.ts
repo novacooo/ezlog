@@ -1,26 +1,28 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { formatLog, TimeFormat } from '../src/formatters';
 import { LogLevel } from '../src';
 
 describe('formatLog', () => {
-  it('should format log with default HH time format', () => {
+  it('should return an array with time, level, and message', () => {
     const result = formatLog(LogLevel.INFO, TimeFormat.HH, 'test message');
 
-    expect(result).toContain('INFO');
-    expect(result).toContain('test message');
-    expect(result).toMatch(/\d{2}:\d{2}:\d{2}/); // HH:mm:ss pattern
+    expect(result).toBeInstanceOf(Array);
+    expect(result).toHaveLength(3);
+    expect(result[0]).toMatch(/\[\d{2}:\d{2}:\d{2}\]/); // time chunk with brackets
+    expect(result[1]).toContain('INFO');
+    expect(result[2]).toBe('test message');
   });
 
-  it('should format log with HH_SSS time format', () => {
-    const result = formatLog(LogLevel.INFO, TimeFormat.HH_SSS, 'test message');
+  it('should format time with HH_SSS format', () => {
+    const result = formatLog(LogLevel.INFO, TimeFormat.HH_SSS, 'test');
 
-    expect(result).toMatch(/\d{2}:\d{2}:\d{2}\.\d{3}/); // HH:mm:ss.SSS pattern
+    expect(result[0]).toMatch(/\[\d{2}:\d{2}:\d{2}\.\d{3}\]/); // HH:mm:ss.SSS pattern
   });
 
-  it('should format log with ISO time format', () => {
-    const result = formatLog(LogLevel.INFO, TimeFormat.ISO, 'test message');
+  it('should format time with ISO format', () => {
+    const result = formatLog(LogLevel.INFO, TimeFormat.ISO, 'test');
 
-    expect(result).toMatch(/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z/); // ISO pattern
+    expect(result[0]).toMatch(/\[\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z\]/); // ISO pattern
   });
 
   it('should pad log level names to 5 characters', () => {
@@ -30,21 +32,21 @@ describe('formatLog', () => {
     const errorLog = formatLog(LogLevel.ERROR, TimeFormat.HH, 'message');
     const fatalLog = formatLog(LogLevel.FATAL, TimeFormat.HH, 'message');
 
-    expect(debugLog).toContain('DEBUG');
-    expect(infoLog).toContain('INFO '); // padded
-    expect(warnLog).toContain('WARN '); // padded
-    expect(errorLog).toContain('ERROR');
-    expect(fatalLog).toContain('FATAL');
+    expect(debugLog[1]).toContain('DEBUG');
+    expect(infoLog[1]).toContain('INFO '); // padded with space
+    expect(warnLog[1]).toContain('WARN '); // padded with space
+    expect(errorLog[1]).toContain('ERROR');
+    expect(fatalLog[1]).toContain('FATAL');
   });
 
-  it('should include all log components', () => {
-    const result = formatLog(LogLevel.WARN, TimeFormat.HH, 'warning message');
+  it('should handle multiple arguments', () => {
+    const result = formatLog(LogLevel.WARN, TimeFormat.HH, 'message', { foo: 'bar' }, 123);
 
-    // Check for time brackets
-    expect(result).toMatch(/\[.*\]/);
-    // Check for level
-    expect(result).toContain('WARN');
-    // Check for message
-    expect(result).toContain('warning message');
+    expect(result).toHaveLength(5);
+    expect(result[0]).toMatch(/\[.*\]/); // time chunk
+    expect(result[1]).toContain('WARN'); // level chunk
+    expect(result[2]).toBe('message');
+    expect(result[3]).toEqual({ foo: 'bar' });
+    expect(result[4]).toBe(123);
   });
 });

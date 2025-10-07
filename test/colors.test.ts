@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { colorizeText, getTextColor, hasColorSupport, TextColor } from '../src/colors';
+import { Color, colorize, getColor, hasColorSupport } from '../src/colors';
 import { LogLevel } from '../src';
 
 describe('hasColorSupport', () => {
@@ -55,7 +55,7 @@ describe('colorizeText', () => {
       env: { TERM: 'xterm-256color' },
     } as any;
 
-    const result = colorizeText('test', TextColor.CYAN);
+    const result = colorize('test', Color.CYAN);
 
     expect(result).toContain('test');
     expect(result).toMatch(/\x1b\[38;2;\d+;\d+;\d+m/); // RGB color code
@@ -71,7 +71,7 @@ describe('colorizeText', () => {
       stdout: { isTTY: false } as any,
     } as any;
 
-    const result = colorizeText('test', TextColor.CYAN);
+    const result = colorize('test', Color.CYAN);
 
     expect(result).toBe('test');
     expect(result).not.toContain('\x1b');
@@ -82,10 +82,10 @@ describe('colorizeText', () => {
 
 describe('getTextColor', () => {
   it('should return correct color for each log level', () => {
-    expect(getTextColor(LogLevel.DEBUG)).toBe(TextColor.CYAN);
-    expect(getTextColor(LogLevel.INFO)).toBe(TextColor.LIGHT_GRAY);
-    expect(getTextColor(LogLevel.WARN)).toBe(TextColor.ORANGE);
-    expect(getTextColor(LogLevel.ERROR)).toBe(TextColor.RED);
-    expect(getTextColor(LogLevel.FATAL)).toBe(TextColor.BRIGHT_RED);
+    expect(getColor(LogLevel.DEBUG)).toBe(Color.CYAN);
+    expect(getColor(LogLevel.INFO)).toBe(Color.LIGHT_GRAY);
+    expect(getColor(LogLevel.WARN)).toBe(Color.ORANGE);
+    expect(getColor(LogLevel.ERROR)).toBe(Color.RED);
+    expect(getColor(LogLevel.FATAL)).toBe(Color.BRIGHT_RED);
   });
 });
