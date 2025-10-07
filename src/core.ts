@@ -1,5 +1,6 @@
 import { LogLevel, normalize, NormalizeTarget, shouldLog } from './levels';
 import { formatLog, TimeFormat } from './formatters';
+import type { LoggerContext } from './context';
 
 // ──────────────────────────────────────── Core utilities ─────────────────────────────────────────
 
@@ -18,11 +19,11 @@ function getMethod(logLevel: LogLevel) {
 
 // ──────────────────────────────────────────── Logger ─────────────────────────────────────────────
 
-function log(level: LogLevel, minLevel: LogLevel, timeFormat: TimeFormat, ...args: any[]): void {
-  if (!shouldLog(level, minLevel)) return;
+function log(level: LogLevel, ctx: LoggerContext, ...args: any[]): void {
+  if (!shouldLog(level, ctx.minLevel)) return;
 
   const method = getMethod(level);
-  const msg = formatLog(level, timeFormat, ...args);
+  const msg = formatLog(level, ctx, ...args);
 
   method(...msg);
 }
@@ -41,14 +42,16 @@ export type LoggerOptions = {
 };
 
 export function createLogger(options: LoggerOptions = {}): Logger {
-  const minLevel = options.minLevel ? normalize(options.minLevel, NormalizeTarget.NAME) : LogLevel.INFO;
-  const timeFormat = options.timeFormat ?? TimeFormat.HH;
+  const ctx: LoggerContext = {
+    minLevel: options.minLevel ? normalize(options.minLevel, NormalizeTarget.NAME) : LogLevel.INFO,
+    timeFormat: options.timeFormat ?? TimeFormat.HH,
+  };
 
   return {
-    debug: (...args) => log(LogLevel.DEBUG, minLevel, timeFormat, ...args),
-    info: (...args) => log(LogLevel.INFO, minLevel, timeFormat, ...args),
-    warn: (...args) => log(LogLevel.WARN, minLevel, timeFormat, ...args),
-    error: (...args) => log(LogLevel.ERROR, minLevel, timeFormat, ...args),
-    fatal: (...args) => log(LogLevel.FATAL, minLevel, timeFormat, ...args),
+    debug: (...args) => log(LogLevel.DEBUG, ctx, ...args),
+    info: (...args) => log(LogLevel.INFO, ctx, ...args),
+    warn: (...args) => log(LogLevel.WARN, ctx, ...args),
+    error: (...args) => log(LogLevel.ERROR, ctx, ...args),
+    fatal: (...args) => log(LogLevel.FATAL, ctx, ...args),
   };
 }

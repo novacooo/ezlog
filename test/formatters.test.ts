@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { formatLog, TimeFormat } from '../src/formatters';
 import { LogLevel } from '../src';
+import { createTestContext } from '../src/context';
 
 describe('formatLog', () => {
   it('should return an array with time, level, and message', () => {
-    const result = formatLog(LogLevel.INFO, TimeFormat.HH, 'test message');
+    const ctx = createTestContext({ timeFormat: TimeFormat.HH });
+    const result = formatLog(LogLevel.INFO, ctx, 'test message');
 
     expect(result).toBeInstanceOf(Array);
     expect(result).toHaveLength(3);
@@ -14,23 +16,26 @@ describe('formatLog', () => {
   });
 
   it('should format time with HH_SSS format', () => {
-    const result = formatLog(LogLevel.INFO, TimeFormat.HH_SSS, 'test');
+    const ctx = createTestContext({ timeFormat: TimeFormat.HH_SSS });
+    const result = formatLog(LogLevel.INFO, ctx, 'test');
 
     expect(result[0]).toMatch(/\[\d{2}:\d{2}:\d{2}\.\d{3}\]/); // HH:mm:ss.SSS pattern
   });
 
   it('should format time with ISO format', () => {
-    const result = formatLog(LogLevel.INFO, TimeFormat.ISO, 'test');
+    const ctx = createTestContext({ timeFormat: TimeFormat.ISO });
+    const result = formatLog(LogLevel.INFO, ctx, 'test');
 
     expect(result[0]).toMatch(/\[\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z\]/); // ISO pattern
   });
 
   it('should pad log level names to 5 characters', () => {
-    const debugLog = formatLog(LogLevel.DEBUG, TimeFormat.HH, 'message');
-    const infoLog = formatLog(LogLevel.INFO, TimeFormat.HH, 'message');
-    const warnLog = formatLog(LogLevel.WARN, TimeFormat.HH, 'message');
-    const errorLog = formatLog(LogLevel.ERROR, TimeFormat.HH, 'message');
-    const fatalLog = formatLog(LogLevel.FATAL, TimeFormat.HH, 'message');
+    const ctx = createTestContext();
+    const debugLog = formatLog(LogLevel.DEBUG, ctx, 'message');
+    const infoLog = formatLog(LogLevel.INFO, ctx, 'message');
+    const warnLog = formatLog(LogLevel.WARN, ctx, 'message');
+    const errorLog = formatLog(LogLevel.ERROR, ctx, 'message');
+    const fatalLog = formatLog(LogLevel.FATAL, ctx, 'message');
 
     expect(debugLog[1]).toContain('DEBUG');
     expect(infoLog[1]).toContain('INFO '); // padded with space
@@ -40,7 +45,8 @@ describe('formatLog', () => {
   });
 
   it('should handle multiple arguments', () => {
-    const result = formatLog(LogLevel.WARN, TimeFormat.HH, 'message', { foo: 'bar' }, 123);
+    const ctx = createTestContext();
+    const result = formatLog(LogLevel.WARN, ctx, 'message', { foo: 'bar' }, 123);
 
     expect(result).toHaveLength(5);
     expect(result[0]).toMatch(/\[.*\]/); // time chunk

@@ -1,6 +1,7 @@
 import { type LogLevel, normalize, NormalizeTarget } from './levels';
 import { Color, colorize, getColor } from './colors';
 import type { ObjectValues } from './utils';
+import type { LoggerContext } from './context';
 
 // ───────────────────────────────────────── Time formats ──────────────────────────────────────────
 
@@ -32,8 +33,8 @@ export function formatTime(date: Date, format: TimeFormat = TimeFormat.HH): stri
 
 // ────────────────────────────────────────── Formatters ───────────────────────────────────────────
 
-export function formatLog(logLevel: LogLevel, timeFormat: TimeFormat, ...args: any[]): any[] {
-  const time = formatTime(new Date(), timeFormat);
+export function formatLog(logLevel: LogLevel, ctx: LoggerContext, ...args: any[]): any[] {
+  const time = formatTime(new Date(), ctx.timeFormat);
   const name = normalize(logLevel, NormalizeTarget.NAME).toUpperCase();
   const level = name.padEnd(5, ' ');
   const color = getColor(logLevel);
