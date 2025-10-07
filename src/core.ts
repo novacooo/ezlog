@@ -36,12 +36,12 @@ export type Logger = {
 };
 
 export type LoggerOptions = {
-  minLevel?: LogLevel;
+  minLevel?: LogLevel | number;
   timeFormat?: TimeFormat;
 };
 
 export function createLogger(options: LoggerOptions = {}): Logger {
-  const minLevel = options.minLevel ?? LogLevel.INFO;
+  const minLevel = options.minLevel ? normalize(options.minLevel, NormalizeTarget.NAME) : LogLevel.INFO;
   const timeFormat = options.timeFormat ?? TimeFormat.HH;
 
   return {
