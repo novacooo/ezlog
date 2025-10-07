@@ -1,6 +1,7 @@
 import { type LogLevel, normalizeLogLevel, NormalizeTarget } from './levels';
 import { colorizeText, getTextColor, TextColor } from './colors';
 import type { ObjectValues } from './utils';
+import type { LogParams } from './types';
 
 export const TimeFormat = {
   HH: 'HH:mm:ss',
@@ -22,7 +23,7 @@ function formatTime(date: Date, format: TimeFormat = TimeFormat.HH): string {
   }
 }
 
-export function formatLog(logLevel: LogLevel, timeFormat: TimeFormat, message: string): string {
+export function formatLog(logLevel: LogLevel, timeFormat: TimeFormat, ...args: LogParams): any[] {
   const time = formatTime(new Date(), timeFormat);
   const name = normalizeLogLevel(logLevel, NormalizeTarget.NAME).toUpperCase();
   const level = name.padEnd(5, ' ');
@@ -30,7 +31,6 @@ export function formatLog(logLevel: LogLevel, timeFormat: TimeFormat, message: s
 
   const timeChunk = `${colorizeText('[', TextColor.LIGHT_GRAY)}${colorizeText(time, TextColor.GRAY)}${colorizeText(']', TextColor.LIGHT_GRAY)}`;
   const levelChunk = colorizeText(level, color);
-  const messageChunk = colorizeText(message, color);
 
-  return [timeChunk, levelChunk, messageChunk].join(' ');
+  return [timeChunk, levelChunk, ...args];
 }

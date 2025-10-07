@@ -1,18 +1,6 @@
 import { LogLevel, normalizeLogLevel, NormalizeTarget, shouldLog } from './levels';
 import { formatLog, TimeFormat } from './formatters';
-
-export type LoggerOptions = {
-  minLevel?: LogLevel;
-  timeFormat?: TimeFormat;
-};
-
-export type Logger = {
-  debug: (message: string) => void;
-  info: (message: string) => void;
-  warn: (message: string) => void;
-  error: (message: string) => void;
-  fatal: (message: string) => void;
-};
+import type { LogMethod, LogParams } from './types';
 
 const methodMap: Record<LogLevel, typeof console.log> = {
   [LogLevel.DEBUG]: console.debug,
@@ -27,24 +15,37 @@ function getMethod(logLevel: LogLevel) {
   return methodMap[normalized];
 }
 
-function log(level: LogLevel, minLevel: LogLevel, timeFormat: TimeFormat, message: string): void {
+function log(level: LogLevel, minLevel: LogLevel, timeFormat: TimeFormat, ...args: LogParams): void {
   if (!shouldLog(level, minLevel)) return;
 
-  const msg = formatLog(level, timeFormat, message);
   const method = getMethod(level);
+  const msg = formatLog(level, timeFormat, ...args);
 
-  method(msg);
+  method(...msg);
 }
+
+export type Logger = {
+  debug: LogMethod;
+  info: LogMethod;
+  warn: LogMethod;
+  error: LogMethod;
+  fatal: LogMethod;
+};
+
+export type LoggerOptions = {
+  minLevel?: LogLevel;
+  timeFormat?: TimeFormat;
+};
 
 export function createLogger(options: LoggerOptions = {}): Logger {
   const minLevel = options.minLevel ?? LogLevel.INFO;
   const timeFormat = options.timeFormat ?? TimeFormat.HH;
 
   return {
-    debug: (message: string) => log(LogLevel.DEBUG, minLevel, timeFormat, message),
-    info: (message: string) => log(LogLevel.INFO, minLevel, timeFormat, message),
-    warn: (message: string) => log(LogLevel.WARN, minLevel, timeFormat, message),
-    error: (message: string) => log(LogLevel.ERROR, minLevel, timeFormat, message),
-    fatal: (message: string) => log(LogLevel.FATAL, minLevel, timeFormat, message),
+    debug: (...args) => log(LogLevel.DEBUG, minLevel, timeFormat, ...args),
+    info: (...args) => log(LogLevel.INFO, minLevel, timeFormat, ...args),
+    warn: (...args) => log(LogLevel.WARN, minLevel, timeFormat, ...args),
+    error: (...args) => log(LogLevel.ERROR, minLevel, timeFormat, ...args),
+    fatal: (...args) => log(LogLevel.FATAL, minLevel, timeFormat, ...args),
   };
 }
