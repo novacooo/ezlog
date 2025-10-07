@@ -1,40 +1,45 @@
 import { type ObjectValues } from './utils';
-import { LogLevel, normalizeLogLevel, NormalizeTarget } from './levels';
+import { LogLevel, normalize, NormalizeTarget } from './levels';
 
-function rgbToTextColor(r: number, g: number, b: number) {
-  return `\x1b[38;2;${r};${g};${b}m`;
-}
+// ──────────────────────────────────────── Color utilities ────────────────────────────────────────
 
-export const TextColor = {
-  CYAN: rgbToTextColor(120, 203, 227),
-  LIGHT_GRAY: rgbToTextColor(200, 200, 200),
-  GRAY: rgbToTextColor(144, 144, 144),
-  ORANGE: rgbToTextColor(255, 140, 67),
-  RED: rgbToTextColor(246, 83, 83),
-  BRIGHT_RED: rgbToTextColor(210, 0, 0),
-  DEFAULT: '\x1b[0m',
-} as const;
-
-export type TextColor = ObjectValues<typeof TextColor>;
-
-export function hasColorSupport() {
+export function hasColorSupport(): boolean {
   return !!(typeof process !== 'undefined' && process.stdout?.isTTY && process.env.TERM !== 'dumb');
 }
 
-export function colorizeText(text: string, color: TextColor) {
-  return hasColorSupport() ? `${color}${text}${TextColor.DEFAULT}` : text;
+function rgb(r: number, g: number, b: number): string {
+  return `\x1b[38;2;${r};${g};${b}m`;
 }
 
-const textColorMap = {
-  [LogLevel.DEBUG]: TextColor.CYAN,
-  [LogLevel.INFO]: TextColor.LIGHT_GRAY,
-  [LogLevel.WARN]: TextColor.ORANGE,
-  [LogLevel.ERROR]: TextColor.RED,
-  [LogLevel.FATAL]: TextColor.BRIGHT_RED,
+// ──────────────────────────────────────────── Colors ─────────────────────────────────────────────
+
+export const Color = {
+  CYAN: rgb(120, 203, 227),
+  LIGHT_GRAY: rgb(200, 200, 200),
+  GRAY: rgb(144, 144, 144),
+  ORANGE: rgb(255, 140, 67),
+  RED: rgb(246, 83, 83),
+  BRIGHT_RED: rgb(210, 0, 0),
+  DEFAULT: '\x1b[0m',
 } as const;
 
-export function getTextColor(logLevel: LogLevel) {
-  const normalized = normalizeLogLevel(logLevel, NormalizeTarget.NAME);
+export type Color = ObjectValues<typeof Color>;
 
-  return textColorMap[normalized] ?? TextColor.DEFAULT;
+// ────────────────────────────────────────── Colorizing ───────────────────────────────────────────
+
+export function colorize(text: string, color: Color): string {
+  return hasColorSupport() ? `${color}${text}${Color.DEFAULT}` : text;
+}
+
+const colorMap: Record<LogLevel, Color> = {
+  [LogLevel.DEBUG]: Color.CYAN,
+  [LogLevel.INFO]: Color.LIGHT_GRAY,
+  [LogLevel.WARN]: Color.ORANGE,
+  [LogLevel.ERROR]: Color.RED,
+  [LogLevel.FATAL]: Color.BRIGHT_RED,
+} as const;
+
+export function getColor(logLevel: LogLevel): Color {
+  const normalized = normalize(logLevel, NormalizeTarget.NAME);
+  return colorMap[normalized] ?? Color.DEFAULT;
 }

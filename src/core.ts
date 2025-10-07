@@ -1,6 +1,7 @@
-import { LogLevel, normalizeLogLevel, NormalizeTarget, shouldLog } from './levels';
+import { LogLevel, normalize, NormalizeTarget, shouldLog } from './levels';
 import { formatLog, TimeFormat } from './formatters';
-import type { LogMethod, LogParams } from './types';
+
+// ──────────────────────────────────────── Core utilities ─────────────────────────────────────────
 
 const methodMap: Record<LogLevel, typeof console.log> = {
   [LogLevel.DEBUG]: console.debug,
@@ -11,11 +12,13 @@ const methodMap: Record<LogLevel, typeof console.log> = {
 };
 
 function getMethod(logLevel: LogLevel) {
-  const normalized = normalizeLogLevel(logLevel, NormalizeTarget.NAME);
+  const normalized = normalize(logLevel, NormalizeTarget.NAME);
   return methodMap[normalized];
 }
 
-function log(level: LogLevel, minLevel: LogLevel, timeFormat: TimeFormat, ...args: LogParams): void {
+// ──────────────────────────────────────────── Logger ─────────────────────────────────────────────
+
+function log(level: LogLevel, minLevel: LogLevel, timeFormat: TimeFormat, ...args: any[]): void {
   if (!shouldLog(level, minLevel)) return;
 
   const method = getMethod(level);
@@ -25,11 +28,11 @@ function log(level: LogLevel, minLevel: LogLevel, timeFormat: TimeFormat, ...arg
 }
 
 export type Logger = {
-  debug: LogMethod;
-  info: LogMethod;
-  warn: LogMethod;
-  error: LogMethod;
-  fatal: LogMethod;
+  debug: (...args: any[]) => void;
+  info: (...args: any[]) => void;
+  warn: (...args: any[]) => void;
+  error: (...args: any[]) => void;
+  fatal: (...args: any[]) => void;
 };
 
 export type LoggerOptions = {

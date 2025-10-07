@@ -1,7 +1,8 @@
-import { type LogLevel, normalizeLogLevel, NormalizeTarget } from './levels';
-import { colorizeText, getTextColor, TextColor } from './colors';
+import { type LogLevel, normalize, NormalizeTarget } from './levels';
+import { Color, colorize, getColor } from './colors';
 import type { ObjectValues } from './utils';
-import type { LogParams } from './types';
+
+// ───────────────────────────────────────── Time formats ──────────────────────────────────────────
 
 export const TimeFormat = {
   HH: 'HH:mm:ss',
@@ -11,26 +12,34 @@ export const TimeFormat = {
 
 export type TimeFormat = ObjectValues<typeof TimeFormat>;
 
-function formatTime(date: Date, format: TimeFormat = TimeFormat.HH): string {
+// ─────────────────────────────────────── Format utilities ────────────────────────────────────────
+
+export function formatTime(date: Date, format: TimeFormat = TimeFormat.HH): string {
   if (format === TimeFormat.HH) {
     return date.toTimeString().slice(0, 8);
-  } else if (format === TimeFormat.HH_SSS) {
-    return date.toTimeString().slice(0, 8) + '.' + date.getMilliseconds().toString().padStart(3, '0');
-  } else if (format === TimeFormat.ISO) {
-    return date.toISOString();
-  } else {
-    return date.toTimeString().slice(0, 8);
   }
+
+  if (format === TimeFormat.HH_SSS) {
+    return date.toTimeString().slice(0, 8) + '.' + date.getMilliseconds().toString().padStart(3, '0');
+  }
+
+  if (format === TimeFormat.ISO) {
+    return date.toISOString();
+  }
+
+  return date.toTimeString().slice(0, 8);
 }
 
-export function formatLog(logLevel: LogLevel, timeFormat: TimeFormat, ...args: LogParams): any[] {
-  const time = formatTime(new Date(), timeFormat);
-  const name = normalizeLogLevel(logLevel, NormalizeTarget.NAME).toUpperCase();
-  const level = name.padEnd(5, ' ');
-  const color = getTextColor(logLevel);
+// ────────────────────────────────────────── Formatters ───────────────────────────────────────────
 
-  const timeChunk = `${colorizeText('[', TextColor.LIGHT_GRAY)}${colorizeText(time, TextColor.GRAY)}${colorizeText(']', TextColor.LIGHT_GRAY)}`;
-  const levelChunk = colorizeText(level, color);
+export function formatLog(logLevel: LogLevel, timeFormat: TimeFormat, ...args: any[]): any[] {
+  const time = formatTime(new Date(), timeFormat);
+  const name = normalize(logLevel, NormalizeTarget.NAME).toUpperCase();
+  const level = name.padEnd(5, ' ');
+  const color = getColor(logLevel);
+
+  const timeChunk = `${colorize('[', Color.LIGHT_GRAY)}${colorize(time, Color.GRAY)}${colorize(']', Color.LIGHT_GRAY)}`;
+  const levelChunk = colorize(level, color);
 
   return [timeChunk, levelChunk, ...args];
 }
