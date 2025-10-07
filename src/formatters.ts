@@ -1,4 +1,4 @@
-import { type LogLevel, normalize, NormalizeTarget } from './levels';
+import { LogLevel, normalize, NormalizeTarget } from './levels';
 import { Color, colorize, getColor } from './colors';
 import type { ObjectValues } from './utils';
 import type { LoggerContext } from './context';
@@ -70,6 +70,18 @@ export const compactFormatter: FormatterFunction = (logLevel, ctx, ...args) => {
   const levelChunk = colorize(`[${name}]`, color);
 
   return [levelChunk, ...args];
+};
+
+export const emojiFormatter: FormatterFunction = (level, ctx, ...args) => {
+  const emojiMap = {
+    [LogLevel.DEBUG]: '🐛',
+    [LogLevel.INFO]: 'ℹ️',
+    [LogLevel.WARN]: '⚠️',
+    [LogLevel.ERROR]: '❌ ',
+    [LogLevel.FATAL]: '💀',
+  };
+
+  return [emojiMap[level] ?? '?', ...args];
 };
 
 // Backward compatibility
