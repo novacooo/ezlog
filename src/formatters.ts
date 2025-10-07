@@ -33,7 +33,9 @@ export function formatTime(date: Date, format: TimeFormat = TimeFormat.HH): stri
 
 // ────────────────────────────────────────── Formatters ───────────────────────────────────────────
 
-export function formatLog(logLevel: LogLevel, ctx: LoggerContext, ...args: any[]): any[] {
+export type FormatterFunction = (logLevel: LogLevel, ctx: LoggerContext, ...args: any[]) => any[];
+
+export const defaultFormatter: FormatterFunction = (logLevel, ctx, ...args) => {
   const time = formatTime(new Date(), ctx.timeFormat);
   const name = normalize(logLevel, NormalizeTarget.NAME).toUpperCase();
   const level = name.padEnd(5, ' ');
@@ -43,4 +45,34 @@ export function formatLog(logLevel: LogLevel, ctx: LoggerContext, ...args: any[]
   const levelChunk = colorize(level, color);
 
   return [timeChunk, levelChunk, ...args];
+};
+
+export const jsonFormatter: FormatterFunction = (logLevel, ctx, ...args) => {
+  const data = {
+    timestamp: new Date().toISOString(),
+    level: normalize(logLevel, NormalizeTarget.NAME),
+    message: args
+      .map((arg) => {
+        if (typeof arg === 'object') {
+          return JSON.stringify(arg);
+        }
+        return String(arg);
+      })
+      .join(' '),
+  };
+
+  return [JSON.stringify(data)];
+};
+
+export const compactFormatter: FormatterFunction = (logLevel, ctx, ...args) => {
+  const name = normalize(logLevel, NormalizeTarget.NAME).toUpperCase();
+  const color = getColor(logLevel);
+  const levelChunk = colorize(`[${name}]`, color);
+
+  return [levelChunk, ...args];
+};
+
+// Backward compatibility
+export function formatLog(logLevel: LogLevel, ctx: LoggerContext, ...args: any[]): any[] {
+  return ctx.formatter(logLevel, ctx, ...args);
 }

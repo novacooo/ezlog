@@ -1,5 +1,5 @@
 import { LogLevel, normalize, NormalizeTarget, shouldLog } from './levels';
-import { formatLog, TimeFormat } from './formatters';
+import { TimeFormat, defaultFormatter, type FormatterFunction } from './formatters';
 import type { LoggerContext } from './context';
 
 // ──────────────────────────────────────── Core utilities ─────────────────────────────────────────
@@ -23,7 +23,7 @@ function log(level: LogLevel, ctx: LoggerContext, ...args: any[]): void {
   if (!shouldLog(level, ctx.minLevel)) return;
 
   const method = getMethod(level);
-  const msg = formatLog(level, ctx, ...args);
+  const msg = ctx.formatter(level, ctx, ...args);
 
   method(...msg);
 }
@@ -39,12 +39,14 @@ export type Logger = {
 export type LoggerOptions = {
   minLevel?: LogLevel | number;
   timeFormat?: TimeFormat;
+  formatter?: FormatterFunction;
 };
 
 export function createLogger(options: LoggerOptions = {}): Logger {
   const ctx: LoggerContext = {
     minLevel: options.minLevel ? normalize(options.minLevel, NormalizeTarget.NAME) : LogLevel.INFO,
     timeFormat: options.timeFormat ?? TimeFormat.HH,
+    formatter: options.formatter ?? defaultFormatter,
   };
 
   return {
