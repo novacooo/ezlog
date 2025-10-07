@@ -131,3 +131,6 @@ dist
 
 # AI agents
 .claude
+
+# Development playground
+dev.ts
