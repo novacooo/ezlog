@@ -71,20 +71,3 @@ export const compactFormatter: FormatterFunction = (logLevel, ctx, ...args) => {
 
   return [levelChunk, ...args];
 };
-
-export const emojiFormatter: FormatterFunction = (level, ctx, ...args) => {
-  const emojiMap = {
-    [LogLevel.DEBUG]: '🐛',
-    [LogLevel.INFO]: 'ℹ️',
-    [LogLevel.WARN]: '⚠️',
-    [LogLevel.ERROR]: '❌ ',
-    [LogLevel.FATAL]: '💀',
-  };
-
-  return [emojiMap[level] ?? '?', ...args];
-};
-
-// Backward compatibility
-export function formatLog(logLevel: LogLevel, ctx: LoggerContext, ...args: any[]): any[] {
-  return ctx.formatter(logLevel, ctx, ...args);
-}
