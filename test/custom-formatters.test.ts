@@ -14,7 +14,7 @@ describe('Custom Formatters', () => {
     it('should produce valid JSON output', () => {
       const result = jsonFormatter(
         LogLevel.INFO,
-        { minLevel: LogLevel.INFO, timeFormat: 'HH:mm:ss', formatter: jsonFormatter } as any,
+        { minLevel: LogLevel.INFO, timeFormat: 'HH:mm:ss', context: {} } as any,
         'test',
         'message',
       );
@@ -31,7 +31,7 @@ describe('Custom Formatters', () => {
     it('should stringify objects in message', () => {
       const result = jsonFormatter(
         LogLevel.INFO,
-        { minLevel: LogLevel.INFO, timeFormat: 'HH:mm:ss', formatter: jsonFormatter } as any,
+        { minLevel: LogLevel.INFO, timeFormat: 'HH:mm:ss', context: {} } as any,
         'User:',
         { id: 123 },
       );
@@ -53,7 +53,7 @@ describe('Custom Formatters', () => {
     it('should include level and message', () => {
       const result = compactFormatter(
         LogLevel.WARN,
-        { minLevel: LogLevel.INFO, timeFormat: 'HH:mm:ss', formatter: compactFormatter } as any,
+        { minLevel: LogLevel.INFO, timeFormat: 'HH:mm:ss', context: {} } as any,
         'test',
         'message',
       );

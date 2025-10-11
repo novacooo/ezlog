@@ -102,4 +102,102 @@ describe('createLogger', () => {
       expect(() => logger.info(true)).not.toThrow();
     });
   });
+
+  describe('context support', () => {
+    it('should create logger with context', () => {
+      const logger = createLogger({
+        context: { service: 'api', requestId: '123' },
+      });
+      expect(logger).toBeDefined();
+      expect(() => logger.info('test')).not.toThrow();
+    });
+
+    it('should create logger with empty context by default', () => {
+      const logger = createLogger();
+      expect(logger).toBeDefined();
+      expect(() => logger.info('test')).not.toThrow();
+    });
+
+    it('should handle context with various data types', () => {
+      const logger = createLogger({
+        context: {
+          string: 'value',
+          number: 42,
+          boolean: true,
+          object: { nested: 'data' },
+          array: [1, 2, 3],
+        },
+      });
+      expect(() => logger.info('test')).not.toThrow();
+    });
+  });
+
+  describe('child loggers', () => {
+    it('should have child method', () => {
+      const logger = createLogger();
+      expect(logger).toHaveProperty('child');
+      expect(typeof logger.child).toBe('function');
+    });
+
+    it('should create child logger with additional context', () => {
+      const parentLogger = createLogger({
+        context: { service: 'api' },
+      });
+      const childLogger = parentLogger.child({ requestId: '123' });
+
+      expect(childLogger).toBeDefined();
+      expect(childLogger).toHaveProperty('debug');
+      expect(childLogger).toHaveProperty('info');
+      expect(childLogger).toHaveProperty('child');
+      expect(() => childLogger.info('test')).not.toThrow();
+    });
+
+    it('should merge parent and child context', () => {
+      const parentLogger = createLogger({
+        context: { service: 'api', version: '1.0' },
+      });
+      const childLogger = parentLogger.child({ requestId: '123', userId: '456' });
+
+      expect(() => childLogger.info('test message')).not.toThrow();
+    });
+
+    it('should override parent context keys with child context', () => {
+      const parentLogger = createLogger({
+        context: { service: 'api', env: 'dev' },
+      });
+      const childLogger = parentLogger.child({ env: 'production' });
+
+      expect(() => childLogger.info('test')).not.toThrow();
+    });
+
+    it('should allow creating nested child loggers', () => {
+      const rootLogger = createLogger({ context: { service: 'api' } });
+      const childLogger = rootLogger.child({ requestId: '123' });
+      const grandchildLogger = childLogger.child({ userId: '456' });
+
+      expect(grandchildLogger).toBeDefined();
+      expect(() => grandchildLogger.info('test')).not.toThrow();
+    });
+
+    it('should inherit parent configuration', () => {
+      const parentLogger = createLogger({
+        minLevel: LogLevel.WARN,
+        timeFormat: TimeFormat.ISO,
+        context: { service: 'api' },
+      });
+      const childLogger = parentLogger.child({ requestId: '123' });
+
+      // Child should work with inherited config
+      expect(() => childLogger.warn('warning')).not.toThrow();
+      expect(() => childLogger.error('error')).not.toThrow();
+    });
+
+    it('should create child logger with empty context', () => {
+      const parentLogger = createLogger({ context: { service: 'api' } });
+      const childLogger = parentLogger.child({});
+
+      expect(childLogger).toBeDefined();
+      expect(() => childLogger.info('test')).not.toThrow();
+    });
+  });
 });

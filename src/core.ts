@@ -1,6 +1,6 @@
 import { LogLevel, normalize, NormalizeTarget, shouldLog } from './levels';
-import { TimeFormat, defaultFormatter, type FormatterFunction } from './formatters';
-import type { LoggerContext } from './context';
+import { defaultFormatter, type FormatterFunction, TimeFormat } from './formatters';
+import type { LoggerState } from './state';
 
 // ──────────────────────────────────────── Core utilities ─────────────────────────────────────────
 
@@ -19,11 +19,11 @@ function getMethod(logLevel: LogLevel) {
 
 // ──────────────────────────────────────────── Logger ─────────────────────────────────────────────
 
-function log(level: LogLevel, ctx: LoggerContext, ...args: any[]): void {
-  if (!shouldLog(level, ctx.minLevel)) return;
+function log(level: LogLevel, state: LoggerState, formatter: FormatterFunction, ...args: any[]): void {
+  if (!shouldLog(level, state.minLevel)) return;
 
   const method = getMethod(level);
-  const msg = ctx.formatter(level, ctx, ...args);
+  const msg = formatter(level, state, ...args);
 
   method(...msg);
 }
@@ -34,26 +34,37 @@ export type Logger = {
   warn: (...args: any[]) => void;
   error: (...args: any[]) => void;
   fatal: (...args: any[]) => void;
+  child: (context: Record<string, any>) => Logger;
 };
 
 export type LoggerOptions = {
   minLevel?: LogLevel | number;
   timeFormat?: TimeFormat;
   formatter?: FormatterFunction;
+  context?: Record<string, any>;
 };
 
 export function createLogger(options: LoggerOptions = {}): Logger {
-  const ctx: LoggerContext = {
+  const formatter = options.formatter ?? defaultFormatter;
+  const state: LoggerState = {
     minLevel: options.minLevel ? normalize(options.minLevel, NormalizeTarget.NAME) : LogLevel.INFO,
     timeFormat: options.timeFormat ?? TimeFormat.HH,
-    formatter: options.formatter ?? defaultFormatter,
+    context: options.context ?? {},
   };
 
   return {
-    debug: (...args) => log(LogLevel.DEBUG, ctx, ...args),
-    info: (...args) => log(LogLevel.INFO, ctx, ...args),
-    warn: (...args) => log(LogLevel.WARN, ctx, ...args),
-    error: (...args) => log(LogLevel.ERROR, ctx, ...args),
-    fatal: (...args) => log(LogLevel.FATAL, ctx, ...args),
+    debug: (...args) => log(LogLevel.DEBUG, state, formatter, ...args),
+    info: (...args) => log(LogLevel.INFO, state, formatter, ...args),
+    warn: (...args) => log(LogLevel.WARN, state, formatter, ...args),
+    error: (...args) => log(LogLevel.ERROR, state, formatter, ...args),
+    fatal: (...args) => log(LogLevel.FATAL, state, formatter, ...args),
+    child: (childContext) => {
+      return createLogger({
+        minLevel: state.minLevel,
+        timeFormat: state.timeFormat,
+        formatter: formatter,
+        context: { ...state.context, ...childContext },
+      });
+    },
   };
 }

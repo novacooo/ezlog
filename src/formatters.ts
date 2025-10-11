@@ -1,7 +1,7 @@
 import { LogLevel, normalize, NormalizeTarget } from './levels';
 import { Color, colorize, getColor } from './colors';
 import type { ObjectValues } from './utils';
-import type { LoggerContext } from './context';
+import type { LoggerState } from './state';
 
 // ───────────────────────────────────────── Time formats ──────────────────────────────────────────
 
@@ -31,26 +31,35 @@ export function formatTime(date: Date, format: TimeFormat = TimeFormat.HH): stri
   return date.toTimeString().slice(0, 8);
 }
 
+export function formatContext(context: Record<string, any>, color: Color): string[] {
+  return Object.entries(context).map(([key, value]) => {
+    const formattedValue = typeof value === 'object' ? JSON.stringify(value) : String(value);
+    return colorize(`[${key}=${formattedValue}]`, color);
+  });
+}
+
 // ────────────────────────────────────────── Formatters ───────────────────────────────────────────
 
-export type FormatterFunction = (logLevel: LogLevel, ctx: LoggerContext, ...args: any[]) => any[];
+export type FormatterFunction = (logLevel: LogLevel, state: LoggerState, ...args: any[]) => any[];
 
-export const defaultFormatter: FormatterFunction = (logLevel, ctx, ...args) => {
-  const time = formatTime(new Date(), ctx.timeFormat);
+export const defaultFormatter: FormatterFunction = (logLevel, state, ...args) => {
+  const time = formatTime(new Date(), state.timeFormat);
   const name = normalize(logLevel, NormalizeTarget.NAME).toUpperCase();
   const level = name.padEnd(5, ' ');
   const color = getColor(logLevel);
 
   const timeChunk = `${colorize('[', Color.LIGHT_GRAY)}${colorize(time, Color.GRAY)}${colorize(']', Color.LIGHT_GRAY)}`;
   const levelChunk = colorize(level, color);
+  const contextChunks = formatContext(state.context, color);
 
-  return [timeChunk, levelChunk, ...args];
+  return [timeChunk, levelChunk, ...contextChunks, ...args];
 };
 
-export const jsonFormatter: FormatterFunction = (logLevel, ctx, ...args) => {
+export const jsonFormatter: FormatterFunction = (logLevel, state, ...args) => {
   const data = {
     timestamp: new Date().toISOString(),
     level: normalize(logLevel, NormalizeTarget.NAME),
+    ...(Object.keys(state.context).length > 0 && { context: state.context }),
     message: args
       .map((arg) => {
         if (typeof arg === 'object') {
@@ -64,10 +73,11 @@ export const jsonFormatter: FormatterFunction = (logLevel, ctx, ...args) => {
   return [JSON.stringify(data)];
 };
 
-export const compactFormatter: FormatterFunction = (logLevel, ctx, ...args) => {
+export const compactFormatter: FormatterFunction = (logLevel, state, ...args) => {
   const name = normalize(logLevel, NormalizeTarget.NAME).toUpperCase();
   const color = getColor(logLevel);
   const levelChunk = colorize(`[${name}]`, color);
+  const contextChunks = formatContext(state.context, color);
 
-  return [levelChunk, ...args];
+  return [levelChunk, ...contextChunks, ...args];
 };

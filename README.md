@@ -13,6 +13,7 @@ Simple, colorful, and flexible logging with zero dependencies. Perfect for quick
 - 🕐 **Flexible time formats** (HH:mm:ss, ISO, custom)
 - 🎯 **Log level filtering** (show only what matters)
 - 🎭 **Custom formatters** (JSON, compact, or build your own)
+- 🔍 **Context & child loggers** (track requests, users, services)
 - 📦 **Zero dependencies** (pure TypeScript)
 - 🪶 **Tiny bundle size**
 - 🔧 **TypeScript-first** with full type safety
@@ -73,6 +74,7 @@ import { createLogger, LogLevel, TimeFormat } from '@novacooo/ezlog';
 const logger = createLogger({
   minLevel: LogLevel.DEBUG, // Show all logs
   timeFormat: TimeFormat.HH_SSS, // Include milliseconds
+  context: { service: 'api', env: 'production' }, // Add context to all logs
 });
 ```
 
@@ -118,6 +120,65 @@ const logger3 = createLogger({ timeFormat: TimeFormat.ISO });
 // [2025-10-07T12:34:56.789Z] INFO Message
 ```
 
+### Context & Metadata
+
+Add persistent context to your logs - perfect for tracking requests, users, or services:
+
+```typescript
+import { createLogger } from '@novacooo/ezlog';
+
+// Create logger with base context
+const logger = createLogger({
+  context: { service: 'api', env: 'production' },
+});
+
+logger.info('Server started');
+// [12:34:56] INFO [service=api] [env=production] Server started
+
+// Context appears in all log levels
+logger.error('Database connection failed');
+// [12:34:56] ERROR [service=api] [env=production] Database connection failed
+```
+
+### Child Loggers
+
+Create child loggers that inherit and extend parent context:
+
+```typescript
+const rootLogger = createLogger({
+  context: { service: 'api' },
+});
+
+// In request handler
+function handleRequest(req) {
+  // Child logger adds request-specific context
+  const requestLogger = rootLogger.child({
+    requestId: req.id,
+    userId: req.user?.id,
+  });
+
+  requestLogger.info('Request started');
+  // [12:34:56] INFO [service=api] [requestId=abc-123] [userId=456] Request started
+
+  processRequest(requestLogger);
+
+  requestLogger.info('Request completed');
+  // [12:34:56] INFO [service=api] [requestId=abc-123] [userId=456] Request completed
+}
+
+// Create nested child loggers
+const dbLogger = requestLogger.child({ component: 'database' });
+dbLogger.debug('Executing query');
+// [12:34:56] DEBUG [service=api] [requestId=abc-123] [userId=456] [component=database] Executing query
+```
+
+**Context Benefits:**
+
+- 🔍 **Traceability**: Track requests across your application
+- 🧩 **Structure**: Organize logs by service, component, or feature
+- 📊 **Analysis**: Easy filtering in log aggregation tools
+- 🎯 **Debugging**: Quickly find all logs related to a specific request/user
+
 ## 🎨 Custom Formatters
 
 ### Built-in Formatters
@@ -137,9 +198,13 @@ logger.info('Hello World');
 ```typescript
 import { createLogger, jsonFormatter } from '@novacooo/ezlog';
 
-const logger = createLogger({ formatter: jsonFormatter });
+const logger = createLogger({
+  formatter: jsonFormatter,
+  context: { service: 'api', env: 'production' },
+});
+
 logger.info('User action', { userId: 123, action: 'login' });
-// {"timestamp":"2025-10-07T12:34:56.789Z","level":"info","message":"User action {\"userId\":123,\"action\":\"login\"}"}
+// {"timestamp":"2025-10-07T12:34:56.789Z","level":"info","context":{"service":"api","env":"production"},"message":"User action {\"userId\":123,\"action\":\"login\"}"}
 ```
 
 **Compact Formatter** (minimal output):
@@ -181,14 +246,36 @@ logger2.error('Something failed');
 
 ## 💡 Real-World Examples
 
-### API Logging
+### API Logging with Request Tracking
 
 ```typescript
-const logger = createLogger({ minLevel: 'info' });
+const rootLogger = createLogger({
+  minLevel: 'info',
+  context: { service: 'api', version: '1.0.0' },
+});
 
 app.use((req, res, next) => {
-  logger.info(`${req.method} ${req.path} ${res.statusCode} - ${responseTime}ms`);
+  // Create request-specific logger
+  const requestLogger = rootLogger.child({
+    requestId: req.id,
+    method: req.method,
+    path: req.path,
+  });
+
+  req.logger = requestLogger;
+  requestLogger.info('Request received');
+
+  res.on('finish', () => {
+    requestLogger.info('Request completed', { statusCode: res.statusCode });
+  });
+
   next();
+});
+
+// Use in route handlers
+app.get('/users/:id', (req, res) => {
+  req.logger.debug('Fetching user', { userId: req.params.id });
+  // [12:34:56] DEBUG [service=api] [version=1.0.0] [requestId=abc-123] [method=GET] [path=/users/:id] Fetching user { userId: '456' }
 });
 ```
 
@@ -239,8 +326,27 @@ Creates a new logger instance.
 - `minLevel?: LogLevel | number` - Minimum log level to display (default: `'info'`)
 - `timeFormat?: TimeFormat` - Timestamp format (default: `'HH:mm:ss'`)
 - `formatter?: FormatterFunction` - Custom formatter function (default: `defaultFormatter`)
+- `context?: Record<string, any>` - Context object to include in all logs (default: `{}`)
 
-**Returns:** `Logger` instance with methods: `debug`, `info`, `warn`, `error`, `fatal`
+**Returns:** `Logger` instance with methods: `debug`, `info`, `warn`, `error`, `fatal`, `child`
+
+### `logger.child(context)`
+
+Creates a child logger that inherits parent configuration and merges context.
+
+**Parameters:**
+
+- `context: Record<string, any>` - Additional context to merge with parent context
+
+**Returns:** New `Logger` instance with merged context
+
+**Example:**
+
+```typescript
+const parent = createLogger({ context: { service: 'api' } });
+const child = parent.child({ requestId: '123' });
+// Child logs will include both service and requestId
+```
 
 ### `FormatterFunction`
 
